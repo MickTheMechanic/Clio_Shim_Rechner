@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shim Rechner</title>
+  <style>
+     body {
+      margin: auto;
+      padding: env(safe-area-inset);
+       font-family: system-ui;
+    }
+    
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      grid-gap: 10px;
+      height:100vh;
+      width:100vw;
+      margin:0;
+      padding:0;
+    }
+    
+    .cell{
+      border-radius: 0.5em;
+      font-weight: 500;
+      font-size: 1.5em;
+      color: black;
+      text-align: center;
+      width: 72%;
+      max-width: 8em;
+      display: block;
+      margin: 0 auto;
+      height:2em;
+    }
+    #image1{
+      grid-column: 1;
+      grid-row: 1;
+      position:relative;
+      max-height:100%;
+      max-width:20em;
+      margin:auto;
+    }
+    #image2{
+      grid-column: 2;
+      grid-row: 1;
+      position:relative;
+      max-height:100%;
+      max-width:20em;
+      margin:auto;
+    }
+    #image3{
+      grid-column: 2;
+      grid-row: 1;
+      position:relative;
+      max-height:100%;
+      max-width:20em;
+      margin:auto;
+    }
+    #box1 {
+      grid-column: 1;
+      grid-row: 2;
+      font-size: 2em;
+      padding-top:1em;
+    }
+    #box2 {
+      padding-top:1em;
+      grid-column: 2;
+      grid-row: 2;
+      font-size: 2em;
+    }
+    #box3 {
+      grid-column:2;
+      grid-row: 3;
+    }
+    #desired-camber {
+      grid-column: 2 ;
+      grid-row: 4;
+    }
+    #box5 {
+      grid-column: 2;
+      grid-row: 5;
+    }
+    #desired-toe{
+      grid-column: 2 ;
+      grid-row: 6;
+    }
+    #box7 {
+      grid-column: 1;
+      grid-row: 3;
+    }
+    #measured-camber {
+      grid-column: 1 ;
+      grid-row: 4;
+    }
+    #box9 {
+      grid-column: 1;
+      grid-row: 5;
+    }
+    #measured-toe {
+      grid-column: 1;
+      grid-row: 6;
+    }
+    #box11 {
+      grid-column: 1;
+      grid-row: 7;
+    }
+    #axle-inclination {
+      grid-column: 1;
+      grid-row: 8;
+    }
+    #box13 {
+      grid-column: 1/3;
+      grid-row: 9;
+      background-color: #0077ff;
+      color: white;
+      border-radius: 10px;
+    }
+    
+    #box14 {
+      grid-column: 2;
+      grid-row: 7/8;
+    }
+    
+    #result {
+      grid-column: 1/3;
+      grid-row: 10;
+      max-width:90%;
+    }
+    
+    </style>
+  <script>
+    function calculateShimRotation() {
+      // Get the input values from the form
+      const desiredCamber = parseFloat(document.getElementById("desired-camber").value);
+      const desiredToe = parseFloat(document.getElementById("desired-toe").value);
+      const measuredCamber = parseFloat(document.getElementById("measured-camber").value);
+      const measuredToe = parseFloat(document.getElementById("measured-toe").value);
+      const axleInclination = parseFloat(document.getElementById("axle-inclination").value);
+      // Calculate the toe and camber values
+      const camber = (desiredCamber - measuredCamber).toFixed(2);
+      const toe = (desiredToe - measuredToe).toFixed(2);
+      // Convert the rotation angles to radians
+      const camberRad = camber * Math.PI / 180;
+      const toeRad = toe * Math.PI / 180;
+      const alphaRad = axleInclination * Math.PI / 180 *-1;
+      // Calculate the rotation angles around the camber_shim and toe_shim axes
+      const camberShimRad = Math.atan2(Math.sin(camberRad) * Math.cos(alphaRad) + Math.sin(toeRad) * Math.sin(alphaRad), Math.cos(camberRad));
+      const toeShimRad = Math.atan2(Math.sin(toeRad) * Math.cos(alphaRad) - Math.sin(camberRad) * Math.sin(alphaRad), Math.cos(toeRad));
+      // Convert the rotation angles back to degrees and minutes of arc
+      const camberShimDeg = camberShimRad * 180 / Math.PI;
+      const toeShimDeg = toeShimRad * 180 / Math.PI;
+      const camberShimMin = Math.round((Math.abs(camberShimDeg) - Math.floor(Math.abs(camberShimDeg))) * 60);
+      const toeShimMin = Math.round((Math.abs(toeShimDeg) - Math.floor(Math.abs(toeShimDeg))) * 60);
+      const camberShimSign = camberShimDeg >= 0 ? "+" : "-";
+      const toeShimSign = toeShimDeg >= 0 ? "+" : "-";
+      const camberShimDegFloor = Math.floor(Math.abs(camberShimDeg));
+      const toeShimDegFloor = Math.floor(Math.abs(toeShimDeg));
+      // Handle when minutes go up to 60
+      if (camberShimMin === 60) {
+        camberShimMin = 0;
+        camberShimDegFloor += 1;
+      }
+      if (toeShimMin === 60) {
+        toeShimMin = 0;
+        toeShimDegFloor += 1;
+      }
+      // Display the output in the result div
+      document.getElementById("result").innerHTML = `Camber Shim Rotation: ${camberShimSign}${Math.floor(Math.abs(camberShimDeg))}° ${camberShimMin}'<br>Toe Shim Rotation: ${toeShimSign}${Math.floor(Math.abs(toeShimDeg))}° ${toeShimMin}'`;
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+     <img id="image1" src="https://raw.githubusercontent.com/MickTheMechanic/Clio_Shim_Rechner/main/oghead.jpg" alt="Clio Shim Rechner Logo">
+    <img id="image2" src="https://raw.githubusercontent.com/MickTheMechanic/Clio_Shim_Rechner/main/Logo.png" alt="Clio Shim Rechner Logo">
+    <h2 class="cell" id="box1">Istwerte</h2>
+    <h2 class="cell" id="box2">Sollwerte</h2>
+       
+    <label class="cell" id="box3" for="desired-camber">Sturz:</label>
+    <input class="cell" type="number" id="desired-camber" name="desired-camber" step="0.1"><br>
+    <label class="cell" id="box5" for="desired-toe">Spur:</label>
+    <input class="cell" type="number" id="desired-toe" name="desired-toe" step="0.01"><br>
+    <label class="cell" id="box7" for="measured-camber">Sturz:</label>
+    <input class="cell" type="number" id="measured-camber" name="measured-camber" step="0.1"><br>
+    <label class="cell" id="box9" for="measured-toe">Spur:</label>
+    <input class="cell" type="number" id="measured-toe" name="measured-toe" step="0.01"><br>
+    <label class="cell" id="box11" for="axle-inclination">Achse Inklination:</label>
+    <input class="cell" type="number" id="axle-inclination" name="axle-inclination"><br>
+    <input class="cell" id="box13" type="button" value="Berechnen" onclick="calculateShimRotation()">
+    <div class="cell" id="result"></div>
+    <div id="box14">
+      
+      <img id="image3" src="https://raw.githubusercontent.com/MickTheMechanic/Clio_Shim_Rechner/main/Achse.png" alt="Clio Shim Rechner Logo">
+    </div>
+  </form>
+  
+
+</body>
+
+</html>
